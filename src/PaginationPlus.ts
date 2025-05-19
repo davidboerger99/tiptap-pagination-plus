@@ -9,6 +9,8 @@ interface PaginationPlusOptions {
   pageBreakBackground: string;
   pageHeaderHeight: number;
   pageFooterHeight: number;
+  pageMarginLeft: number;
+  pageMarginRight: number;
   pageGapBorderSize: number;
   footerText: string;
 }
@@ -23,6 +25,8 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
       pageBreakBackground: "#ffffff",
       pageHeaderHeight: 10,
       pageFooterHeight: 10,
+      pageMarginLeft: 0,
+      pageMarginRight: 0,
       footerText: ""
     };
   },
@@ -32,6 +36,8 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
     const config = { attributes: true };
     const _pageHeaderHeight = this.options.pageHeaderHeight;
     const _pageFooterHeight = this.options.pageFooterHeight;
+    const _pageMarginLeft = this.options.pageMarginLeft;
+    const _pageMarginRight = this.options.pageMarginRight;
     const _pageHeight = this.options.pageHeight - (_pageHeaderHeight + _pageFooterHeight);
 
     const style = document.createElement('style');
@@ -241,6 +247,7 @@ function createDecoration(
         page.style.position = "relative";
         page.style.float = "left";
         page.style.clear = "both";
+        page.style.paddingLeft = `${pageOptions.pageMarginLeft}px`;
         page.style.marginTop = firstPage
           ? `calc(${_pageHeaderHeight}px + ${_pageHeight}px)`
           : _pageHeight + "px";

@@ -5,6 +5,8 @@ interface PaginationPlusOptions {
     pageBreakBackground: string;
     pageHeaderHeight: number;
     pageFooterHeight: number;
+    pageMarginLeft: number;
+    pageMarginRight: number;
     pageGapBorderSize: number;
     footerText: string;
 }
