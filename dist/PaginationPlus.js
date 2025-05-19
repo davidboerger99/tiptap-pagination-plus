@@ -12,6 +12,7 @@ export const PaginationPlus = Extension.create({
             pageGapBorderSize: 1,
             pageBreakBackground: "#ffffff",
             pageHeaderHeight: 10,
+            pageFooterHeight: 10,
             footerText: ""
         };
     },
@@ -20,7 +21,8 @@ export const PaginationPlus = Extension.create({
         targetNode.classList.add("rm-with-pagination");
         const config = { attributes: true };
         const _pageHeaderHeight = this.options.pageHeaderHeight;
-        const _pageHeight = this.options.pageHeight - (_pageHeaderHeight * 2);
+        const _pageFooterHeight = this.options.pageFooterHeight;
+        const _pageHeight = this.options.pageHeight - (_pageHeaderHeight + _pageFooterHeight);
         const style = document.createElement('style');
         style.dataset.rmPaginationStyle = '';
         style.textContent = `
@@ -66,6 +68,7 @@ export const PaginationPlus = Extension.create({
       }
       .rm-with-pagination table tbody{
         display: table;
+        max-height: 300px;
         overflow-y: auto;
       }
       .rm-with-pagination table tbody > tr{
@@ -155,7 +158,8 @@ function createDecoration(state, pageOptions) {
         const _extraPages = 5;
         const _pageGap = pageOptions.pageGap;
         const _pageHeaderHeight = pageOptions.pageHeaderHeight;
-        const _pageHeight = pageOptions.pageHeight - (_pageHeaderHeight * 2);
+        const _pageFooterHeight = pageOptions.pageFooterHeight;
+        const _pageHeight = pageOptions.pageHeight - (_pageHeaderHeight + _pageFooterHeight);
         const _pageBreakBackground = pageOptions.pageBreakBackground;
         const _pageGapBorderSize = pageOptions.pageGapBorderSize;
         const childElements = view.dom.children;
@@ -169,7 +173,7 @@ function createDecoration(state, pageOptions) {
             : 0;
         previousPageCount =
             previousPageCount > _extraPages ? previousPageCount - _extraPages : 0;
-        const totalPageGap = _pageGap + _pageHeaderHeight + _pageHeaderHeight;
+        const totalPageGap = _pageGap + _pageHeaderHeight + _pageFooterHeight;
         let actualPageContentHeight = totalHeight -
             previousPageCount * (totalPageGap + _pageGapBorderSize * 2);
         let pages = Math.ceil(actualPageContentHeight / _pageHeight);
@@ -201,7 +205,7 @@ function createDecoration(state, pageOptions) {
             pageBreak.style.zIndex = "2";
             const pageFooter = document.createElement("div");
             pageFooter.classList.add("rm-page-footer");
-            pageFooter.style.height = _pageHeaderHeight + "px";
+            pageFooter.style.height = _pageFooterHeight + "px";
             const pageSpace = document.createElement("div");
             pageSpace.classList.add("rm-pagination-gap");
             pageSpace.style.height = _pageGap + "px";
@@ -245,7 +249,7 @@ function createDecoration(state, pageOptions) {
     }, { side: -1 });
     const lastFooterWidget = Decoration.widget(state.doc.content.size, () => {
         const el = document.createElement("div");
-        el.style.height = `${pageOptions.pageHeaderHeight}px`;
+        el.style.height = `${pageOptions.pageFooterHeight}px`;
         return el;
     }, { side: 1 });
     return [
