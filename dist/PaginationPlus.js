@@ -15,7 +15,7 @@ export const PaginationPlus = Extension.create({
             pageFooterHeight: 10,
             pageMarginLeft: 0,
             pageMarginRight: 0,
-            footerText: ""
+            footerText: "",
         };
     },
     onCreate() {
@@ -27,8 +27,8 @@ export const PaginationPlus = Extension.create({
         const _pageMarginLeft = this.options.pageMarginLeft;
         const _pageMarginRight = this.options.pageMarginRight;
         const _pageHeight = this.options.pageHeight - (_pageHeaderHeight + _pageFooterHeight);
-        const style = document.createElement('style');
-        style.dataset.rmPaginationStyle = '';
+        const style = document.createElement("style");
+        style.dataset.rmPaginationStyle = "";
         style.textContent = `
       .rm-with-pagination {
         counter-reset: page-number;
@@ -43,7 +43,7 @@ export const PaginationPlus = Extension.create({
         top: 5px;
       }
       .rm-with-pagination .rm-page-footer::after {
-        content: "${this.options.footerText}"; 
+        content: attr(data-footer-text); 
         position: absolute;
         left: 25px;
         top: 5px;
@@ -97,9 +97,9 @@ export const PaginationPlus = Extension.create({
             const pageElements = [...target.querySelectorAll(".page")];
             const contentElements = [...targetNode.children];
             const pageTops = pageElements.map((el) => el.offsetTop).filter((top) => top !== 0);
-            pageTops.push(Infinity); // to simplify range check for last page
+            pageTops.push(Number.POSITIVE_INFINITY); // to simplify range check for last page
             const pagesWithContent = new Set();
-            for (let i = 2; i < (contentElements.length - 1); i++) {
+            for (let i = 2; i < contentElements.length - 1; i++) {
                 const top = contentElements[i].offsetTop;
                 for (let i = 0; i < pageTops.length - 1; i++) {
                     if (top >= pageTops[i] && top < pageTops[i + 1]) {
@@ -110,10 +110,9 @@ export const PaginationPlus = Extension.create({
             }
             const maxPage = pagesWithContent.size > 0 ? Math.max(...Array.from(pagesWithContent)) : 0;
             const _maxPage = maxPage + 2;
-            targetNode.style.minHeight = `${(_maxPage * this.options.pageHeight) +
-                ((_maxPage - 1) * (_pageGap + (2 * _pageGapBorderSize)))}px`;
+            targetNode.style.minHeight = `${_maxPage * this.options.pageHeight + (_maxPage - 1) * (_pageGap + 2 * _pageGapBorderSize)}px`;
             if (maxPage + 1 in target.children) {
-                target.children[maxPage + 1].classList.add('last-page');
+                target.children[maxPage + 1].classList.add("last-page");
             }
         };
         const callback = (mutationList, observer) => {
@@ -172,20 +171,16 @@ function createDecoration(state, pageOptions) {
             totalHeight += childElements[i].scrollHeight;
         }
         const paginationElement = document.querySelector("[data-rm-pagination]");
-        let previousPageCount = paginationElement
-            ? paginationElement.children.length
-            : 0;
-        previousPageCount =
-            previousPageCount > _extraPages ? previousPageCount - _extraPages : 0;
+        let previousPageCount = paginationElement ? paginationElement.children.length : 0;
+        previousPageCount = previousPageCount > _extraPages ? previousPageCount - _extraPages : 0;
         const totalPageGap = _pageGap + _pageHeaderHeight + _pageFooterHeight;
-        let actualPageContentHeight = totalHeight -
-            previousPageCount * (totalPageGap + _pageGapBorderSize * 2);
+        const actualPageContentHeight = totalHeight - previousPageCount * (totalPageGap + _pageGapBorderSize * 2);
         let pages = Math.ceil(actualPageContentHeight / _pageHeight);
         pages = pages > 0 ? pages - 1 : 0;
         const breakerWidth = view.dom.clientWidth;
         const el = document.createElement("div");
         el.dataset.rmPagination = "true";
-        const pageBreakDefinition = ({ firstPage = false, lastPage = false, }) => {
+        const pageBreakDefinition = ({ firstPage = false, lastPage = false, pageIndex = 0, }) => {
             const pageContainer = document.createElement("div");
             pageContainer.classList.add("rm-page-break");
             const page = document.createElement("div");
@@ -194,9 +189,7 @@ function createDecoration(state, pageOptions) {
             page.style.float = "left";
             page.style.clear = "both";
             page.style.paddingLeft = `${pageOptions.pageMarginLeft}px`;
-            page.style.marginTop = firstPage
-                ? `calc(${_pageHeaderHeight}px + ${_pageHeight}px)`
-                : _pageHeight + "px";
+            page.style.marginTop = firstPage ? `calc(${_pageHeaderHeight}px + ${_pageHeight}px)` : _pageHeight + "px";
             const pageBreak = document.createElement("div");
             pageBreak.classList.add("breaker");
             pageBreak.style.width = `calc(${breakerWidth}px)`;
@@ -211,6 +204,20 @@ function createDecoration(state, pageOptions) {
             const pageFooter = document.createElement("div");
             pageFooter.classList.add("rm-page-footer");
             pageFooter.style.height = _pageFooterHeight + "px";
+            // Set the footer text based on the type of footerText option
+            let footerText = "";
+            if (typeof pageOptions.footerText === "string") {
+                footerText = pageOptions.footerText;
+            }
+            else if (Array.isArray(pageOptions.footerText) && pageOptions.footerText.length > 0) {
+                const pageNum = pageIndex + 1;
+                footerText =
+                    pageOptions.footerText[pageIndex] || pageOptions.footerText[pageOptions.footerText.length - 1] || "";
+            }
+            else if (typeof pageOptions.footerText === "function") {
+                footerText = pageOptions.footerText(pageIndex + 1);
+            }
+            pageFooter.setAttribute("data-footer-text", footerText);
             const pageSpace = document.createElement("div");
             pageSpace.classList.add("rm-pagination-gap");
             pageSpace.style.height = _pageGap + "px";
@@ -229,18 +236,27 @@ function createDecoration(state, pageOptions) {
             pageContainer.append(page, pageBreak);
             return pageContainer;
         };
-        const page = pageBreakDefinition({ firstPage: false, lastPage: false });
+        const page = pageBreakDefinition({ firstPage: false, lastPage: false, pageIndex: 0 });
         const firstPage = pageBreakDefinition({
             firstPage: true,
             lastPage: false,
+            pageIndex: 0,
         });
         const fragment = document.createDocumentFragment();
         for (let i = 0; i < pages + _extraPages; i++) {
             if (i === 0) {
-                fragment.appendChild(firstPage.cloneNode(true));
+                fragment.appendChild(pageBreakDefinition({
+                    firstPage: true,
+                    lastPage: false,
+                    pageIndex: i,
+                }).cloneNode(true));
             }
             else {
-                fragment.appendChild(page.cloneNode(true));
+                fragment.appendChild(pageBreakDefinition({
+                    firstPage: false,
+                    lastPage: false,
+                    pageIndex: i,
+                }).cloneNode(true));
             }
         }
         el.append(fragment);
@@ -257,9 +273,5 @@ function createDecoration(state, pageOptions) {
         el.style.height = `${pageOptions.pageFooterHeight}px`;
         return el;
     }, { side: 1 });
-    return [
-        pageWidget,
-        firstHeaderWidget,
-        lastFooterWidget
-    ];
+    return [pageWidget, firstHeaderWidget, lastFooterWidget];
 }

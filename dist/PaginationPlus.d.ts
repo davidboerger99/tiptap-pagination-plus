@@ -8,7 +8,7 @@ interface PaginationPlusOptions {
     pageMarginLeft: number;
     pageMarginRight: number;
     pageGapBorderSize: number;
-    footerText: string;
+    footerText: string | string[] | ((pageNumber: number) => string);
 }
 export declare const PaginationPlus: Extension<PaginationPlusOptions, any>;
 export {};
