@@ -338,6 +338,7 @@ function createDecoration(state: EditorState, pageOptions: PaginationPlusOptions
     () => {
       const el = document.createElement("div")
       el.style.height = `${pageOptions.pageHeaderHeight}px`
+      el.style.marginRight = `-${pageOptions.pageMarginRight}px`
       return el
     },
     { side: -1 },

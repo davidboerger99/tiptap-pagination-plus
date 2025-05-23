@@ -277,6 +277,7 @@ function createDecoration(state, pageOptions) {
     const firstHeaderWidget = Decoration.widget(0, () => {
         const el = document.createElement("div");
         el.style.height = `${pageOptions.pageHeaderHeight}px`;
+        el.style.marginRight = `-${pageOptions.pageMarginRight}px`;
         return el;
     }, { side: -1 });
     const lastFooterWidget = Decoration.widget(state.doc.content.size, () => {
