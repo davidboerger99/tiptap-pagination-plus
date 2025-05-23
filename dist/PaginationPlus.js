@@ -36,19 +36,23 @@ export const PaginationPlus = Extension.create({
       .rm-with-pagination {
         counter-reset: page-number;
       }
+      .rm-with-pagination .rm-page-footer {
+        margin-right: -${_pageMarginRight / 2}px;
+        margin-left: ${_pageMarginRight / 2}px;
+      }
       .rm-with-pagination .rm-page-footer::before {
         counter-increment: page-number;
       }
       .rm-with-pagination .rm-page-footer::before {
         content: counter(page-number); 
         position: absolute;
-        right: 25px;
+        right: calc(${_pageMarginLeft}px - ${_pageMarginRight / 2}px);
         top: 5px;
       }
       .rm-with-pagination .rm-page-footer::after {
         content: attr(data-footer-text); 
         position: absolute;
-        left: 25px;
+        left: calc(${_pageMarginLeft}px + ${_pageMarginRight / 2}px);
         top: 5px;
       }
       .rm-with-pagination .rm-page-break.last-page ~ .rm-page-break {
@@ -237,6 +241,8 @@ function createDecoration(state, pageOptions) {
             const pageHeader = document.createElement("div");
             pageHeader.classList.add("rm-page-header");
             pageHeader.style.height = _pageHeaderHeight + "px";
+            pageHeader.style.marginRight = `-${_pageMarginRight / 2}px`;
+            pageHeader.style.marginLeft = `${_pageMarginRight / 2}px`;
             pageBreak.append(pageFooter, pageSpace, pageHeader);
             pageContainer.append(page, pageBreak);
             return pageContainer;
