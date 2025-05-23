@@ -30,6 +30,9 @@ export const PaginationPlus = Extension.create({
         const style = document.createElement("style");
         style.dataset.rmPaginationStyle = "";
         style.textContent = `
+      .ProseMirror {
+        padding-right: ${_pageMarginRight}px;
+      }
       .rm-with-pagination {
         counter-reset: page-number;
       }
@@ -165,6 +168,7 @@ function createDecoration(state, pageOptions) {
         const _pageHeight = pageOptions.pageHeight - (_pageHeaderHeight + _pageFooterHeight);
         const _pageBreakBackground = pageOptions.pageBreakBackground;
         const _pageGapBorderSize = pageOptions.pageGapBorderSize;
+        const _pageMarginRight = pageOptions.pageMarginRight;
         const childElements = view.dom.children;
         let totalHeight = 0;
         for (let i = 2; i < childElements.length - 1; i++) {
@@ -223,6 +227,7 @@ function createDecoration(state, pageOptions) {
             pageSpace.style.height = _pageGap + "px";
             pageSpace.style.borderLeft = "1px solid";
             pageSpace.style.borderRight = "1px solid";
+            pageSpace.style.marginLeft = `${_pageMarginRight / 2}px`;
             pageSpace.style.position = "relative";
             pageSpace.style.setProperty("width", "calc(100% + 2px)", "important");
             pageSpace.style.left = "-1px";
