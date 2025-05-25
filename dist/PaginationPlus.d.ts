@@ -10,5 +10,16 @@ interface PaginationPlusOptions {
     pageGapBorderSize: number;
     footerText: string | string[] | ((pageNumber: number) => string);
 }
+interface MarginUpdate {
+    left?: number;
+    right?: number;
+}
+declare module "@tiptap/core" {
+    interface Commands<ReturnType> {
+        paginationPlus: {
+            updatePageMargins: (margins: MarginUpdate) => ReturnType;
+        };
+    }
+}
 export declare const PaginationPlus: Extension<PaginationPlusOptions, any>;
 export {};

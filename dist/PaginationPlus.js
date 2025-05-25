@@ -18,82 +18,198 @@ export const PaginationPlus = Extension.create({
             footerText: "",
         };
     },
+    addCommands() {
+        return {
+            updatePageMargins: (margins) => ({ editor }) => {
+                // Validate input parameters
+                if (!margins || typeof margins !== "object") {
+                    console.error("Margins parameter must be an object");
+                    return false;
+                }
+                const { left, right } = margins;
+                if (left !== undefined && (typeof left !== "number" || left < 0)) {
+                    console.error("Left margin must be a non-negative number");
+                    return false;
+                }
+                if (right !== undefined && (typeof right !== "number" || right < 0)) {
+                    console.error("Right margin must be a non-negative number");
+                    return false;
+                }
+                // Update the options
+                if (left !== undefined) {
+                    this.options.pageMarginLeft = left;
+                }
+                if (right !== undefined) {
+                    this.options.pageMarginRight = right;
+                }
+                // Update the CSS styles with new margin values
+                const styleElement = this.storage.styleElement;
+                if (styleElement) {
+                    const _pageHeaderHeight = this.options.pageHeaderHeight;
+                    const _pageFooterHeight = this.options.pageFooterHeight;
+                    const _pageMarginLeft = this.options.pageMarginLeft;
+                    const _pageMarginRight = this.options.pageMarginRight;
+                    const _pageHeight = this.options.pageHeight - (_pageHeaderHeight + _pageFooterHeight);
+                    styleElement.textContent = `
+        .ProseMirror {
+          padding-right: ${_pageMarginRight}px;
+        }
+        .rm-with-pagination {
+          counter-reset: page-number;
+        }
+        .rm-with-pagination .rm-page-footer {
+          margin-right: -${_pageMarginRight / 2}px;
+          margin-left: ${_pageMarginRight / 2}px;
+        }
+        .rm-with-pagination .rm-page-footer::before {
+          counter-increment: page-number;
+        }
+        .rm-with-pagination .rm-page-footer::before {
+          content: counter(page-number); 
+          position: absolute;
+          right: calc(-${_pageMarginRight / 2}px + ${_pageMarginRight}px);
+          top: 5px;
+        }
+        .rm-with-pagination .rm-page-footer::after {
+          content: attr(data-footer-text); 
+          position: absolute;
+          left: calc(${_pageMarginLeft}px + ${_pageMarginRight / 2}px);
+          top: 5px;
+        }
+        .rm-with-pagination .rm-page-break.last-page ~ .rm-page-break {
+          display: none;
+        }
+        .rm-with-pagination .rm-page-break.last-page .rm-pagination-gap {
+          display: none;
+        }
+        .rm-with-pagination .rm-page-break.last-page .rm-page-header {
+          display: none;
+        }
+        .rm-with-pagination table tbody > tr > td {
+          width: calc(100% / var(--cell-count));
+          word-break: break-all;
+        }
+        .rm-with-pagination table > tr {
+          display: grid;
+          min-width: 100%;
+        }
+        .rm-with-pagination table {
+          border-collapse: collapse;
+          width: 100%;
+          display: contents;
+        }
+        .rm-with-pagination table tbody{
+          display: table;
+          max-height: 300px;
+          overflow-y: auto;
+        }
+        .rm-with-pagination table tbody > tr{
+          display: table-row !important;
+        }
+        .rm-with-pagination p:has(br.ProseMirror-trailingBreak:only-child) {
+          @apply table w-full;
+        }
+        .rm-with-pagination .table-row-group {
+          max-height: ${_pageHeight}px;
+          overflow-y: auto;
+          width: 100%;
+        }
+      `;
+                }
+                // Trigger a re-render of the pagination decorations
+                editor.view.dispatch(editor.view.state.tr.setMeta(pagination_meta_key, true));
+                console.log("Page margins updated successfully:", {
+                    pageMarginLeft: this.options.pageMarginLeft,
+                    pageMarginRight: this.options.pageMarginRight,
+                });
+                return true;
+            },
+        };
+    },
+    addStorage() {
+        return {
+            styleElement: null,
+        };
+    },
     onCreate() {
         const targetNode = this.editor.view.dom;
         targetNode.classList.add("rm-with-pagination");
         const config = { attributes: true };
+        // Create and store the style element
+        const style = document.createElement("style");
+        style.dataset.rmPaginationStyle = "";
+        this.storage.styleElement = style;
+        // Set initial styles
         const _pageHeaderHeight = this.options.pageHeaderHeight;
         const _pageFooterHeight = this.options.pageFooterHeight;
         const _pageMarginLeft = this.options.pageMarginLeft;
         const _pageMarginRight = this.options.pageMarginRight;
         const _pageHeight = this.options.pageHeight - (_pageHeaderHeight + _pageFooterHeight);
-        const style = document.createElement("style");
-        style.dataset.rmPaginationStyle = "";
         style.textContent = `
-      .ProseMirror {
-        padding-right: ${_pageMarginRight}px;
-      }
-      .rm-with-pagination {
-        counter-reset: page-number;
-      }
-      .rm-with-pagination .rm-page-footer {
-        margin-right: -${_pageMarginRight / 2}px;
-        margin-left: ${_pageMarginRight / 2}px;
-      }
-      .rm-with-pagination .rm-page-footer::before {
-        counter-increment: page-number;
-      }
-      .rm-with-pagination .rm-page-footer::before {
-        content: counter(page-number); 
-        position: absolute;
-        right: calc(${_pageMarginLeft}px - ${_pageMarginRight / 2}px);
-        top: 5px;
-      }
-      .rm-with-pagination .rm-page-footer::after {
-        content: attr(data-footer-text); 
-        position: absolute;
-        left: calc(${_pageMarginLeft}px + ${_pageMarginRight / 2}px);
-        top: 5px;
-      }
-      .rm-with-pagination .rm-page-break.last-page ~ .rm-page-break {
-        display: none;
-      }
-      .rm-with-pagination .rm-page-break.last-page .rm-pagination-gap {
-        display: none;
-      }
-      .rm-with-pagination .rm-page-break.last-page .rm-page-header {
-        display: none;
-      }
-      .rm-with-pagination table tbody > tr > td {
-        width: calc(100% / var(--cell-count));
-        word-break: break-all;
-      }
-      .rm-with-pagination table > tr {
-        display: grid;
-        min-width: 100%;
-      }
-      .rm-with-pagination table {
-        border-collapse: collapse;
-        width: 100%;
-        display: contents;
-      }
-      .rm-with-pagination table tbody{
-        display: table;
-        max-height: 300px;
-        overflow-y: auto;
-      }
-      .rm-with-pagination table tbody > tr{
-        display: table-row !important;
-      }
-      .rm-with-pagination p:has(br.ProseMirror-trailingBreak:only-child) {
-        @apply table w-full;
-      }
-      .rm-with-pagination .table-row-group {
-        max-height: ${_pageHeight}px;
-        overflow-y: auto;
-        width: 100%;
-      }
-    `;
+    .ProseMirror {
+      padding-right: ${_pageMarginRight}px;
+    }
+    .rm-with-pagination {
+      counter-reset: page-number;
+    }
+    .rm-with-pagination .rm-page-footer {
+      margin-right: -${_pageMarginRight / 2}px;
+      margin-left: ${_pageMarginRight / 2}px;
+    }
+    .rm-with-pagination .rm-page-footer::before {
+      counter-increment: page-number;
+    }
+    .rm-with-pagination .rm-page-footer::before {
+      content: counter(page-number); 
+      position: absolute;
+      right: calc(${_pageMarginLeft}px - ${_pageMarginRight / 2}px);
+      top: 5px;
+    }
+    .rm-with-pagination .rm-page-footer::after {
+      content: attr(data-footer-text); 
+      position: absolute;
+      left: calc(${_pageMarginLeft}px + ${_pageMarginRight / 2}px);
+      top: 5px;
+    }
+    .rm-with-pagination .rm-page-break.last-page ~ .rm-page-break {
+      display: none;
+    }
+    .rm-with-pagination .rm-page-break.last-page .rm-pagination-gap {
+      display: none;
+    }
+    .rm-with-pagination .rm-page-break.last-page .rm-page-header {
+      display: none;
+    }
+    .rm-with-pagination table tbody > tr > td {
+      width: calc(100% / var(--cell-count));
+      word-break: break-all;
+    }
+    .rm-with-pagination table > tr {
+      display: grid;
+      min-width: 100%;
+    }
+    .rm-with-pagination table {
+      border-collapse: collapse;
+      width: 100%;
+      display: contents;
+    }
+    .rm-with-pagination table tbody{
+      display: table;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .rm-with-pagination table tbody > tr{
+      display: table-row !important;
+    }
+    .rm-with-pagination p:has(br.ProseMirror-trailingBreak:only-child) {
+      @apply table w-full;
+    }
+    .rm-with-pagination .table-row-group {
+      max-height: ${_pageHeight}px;
+      overflow-y: auto;
+      width: 100%;
+    }
+  `;
         document.head.appendChild(style);
         const _pageGap = this.options.pageGap;
         const _pageGapBorderSize = this.options.pageGapBorderSize;
@@ -134,6 +250,12 @@ export const PaginationPlus = Extension.create({
         observer.observe(targetNode, config);
         refreshPage(targetNode);
         this.editor.view.dispatch(this.editor.view.state.tr.setMeta(pagination_meta_key, true));
+    },
+    onDestroy() {
+        // Clean up the style element when the extension is destroyed
+        if (this.storage.styleElement && this.storage.styleElement.parentNode) {
+            this.storage.styleElement.parentNode.removeChild(this.storage.styleElement);
+        }
     },
     addProseMirrorPlugins() {
         const pageOptions = this.options;
