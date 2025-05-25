@@ -26,7 +26,7 @@ export const PaginationPlus = Extension.create({
                     console.error("Margins parameter must be an object");
                     return false;
                 }
-                const { left, right } = margins;
+                const { left, right, top, bottom } = margins;
                 if (left !== undefined && (typeof left !== "number" || left < 0)) {
                     console.error("Left margin must be a non-negative number");
                     return false;
@@ -35,12 +35,26 @@ export const PaginationPlus = Extension.create({
                     console.error("Right margin must be a non-negative number");
                     return false;
                 }
+                if (top !== undefined && (typeof top !== "number" || top < 0)) {
+                    console.error("Top margin (header height) must be a non-negative number");
+                    return false;
+                }
+                if (bottom !== undefined && (typeof bottom !== "number" || bottom < 0)) {
+                    console.error("Bottom margin (footer height) must be a non-negative number");
+                    return false;
+                }
                 // Update the options
                 if (left !== undefined) {
                     this.options.pageMarginLeft = left;
                 }
                 if (right !== undefined) {
                     this.options.pageMarginRight = right;
+                }
+                if (top !== undefined) {
+                    this.options.pageHeaderHeight = top;
+                }
+                if (bottom !== undefined) {
+                    this.options.pageFooterHeight = bottom;
                 }
                 // Update the CSS styles with new margin values
                 const styleElement = this.storage.styleElement;
@@ -58,6 +72,12 @@ export const PaginationPlus = Extension.create({
           counter-reset: page-number;
         }
         .rm-with-pagination .rm-page-footer {
+          margin-right: -${_pageMarginRight / 2}px;
+          margin-left: ${_pageMarginRight / 2}px;
+          height: ${_pageFooterHeight}px;
+        }
+        .rm-with-pagination .rm-page-header {
+          height: ${_pageHeaderHeight}px;
           margin-right: -${_pageMarginRight / 2}px;
           margin-left: ${_pageMarginRight / 2}px;
         }
@@ -121,6 +141,8 @@ export const PaginationPlus = Extension.create({
                 console.log("Page margins updated successfully:", {
                     pageMarginLeft: this.options.pageMarginLeft,
                     pageMarginRight: this.options.pageMarginRight,
+                    pageHeaderHeight: this.options.pageHeaderHeight,
+                    pageFooterHeight: this.options.pageFooterHeight,
                 });
                 return true;
             },
@@ -153,6 +175,12 @@ export const PaginationPlus = Extension.create({
       counter-reset: page-number;
     }
     .rm-with-pagination .rm-page-footer {
+      margin-right: -${_pageMarginRight / 2}px;
+      margin-left: ${_pageMarginRight / 2}px;
+      height: ${_pageFooterHeight}px;
+    }
+    .rm-with-pagination .rm-page-header {
+      height: ${_pageHeaderHeight}px;
       margin-right: -${_pageMarginRight / 2}px;
       margin-left: ${_pageMarginRight / 2}px;
     }

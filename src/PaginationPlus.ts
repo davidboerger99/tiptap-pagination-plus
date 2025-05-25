@@ -19,6 +19,8 @@ interface PaginationPlusOptions {
 interface MarginUpdate {
   left?: number
   right?: number
+  top?: number // Header height
+  bottom?: number // Footer height
 }
 
 const pagination_meta_key = "PAGINATION_META_KEY"
@@ -58,7 +60,7 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
             return false
           }
 
-          const { left, right } = margins
+          const { left, right, top, bottom } = margins
 
           if (left !== undefined && (typeof left !== "number" || left < 0)) {
             console.error("Left margin must be a non-negative number")
@@ -70,6 +72,16 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
             return false
           }
 
+          if (top !== undefined && (typeof top !== "number" || top < 0)) {
+            console.error("Top margin (header height) must be a non-negative number")
+            return false
+          }
+
+          if (bottom !== undefined && (typeof bottom !== "number" || bottom < 0)) {
+            console.error("Bottom margin (footer height) must be a non-negative number")
+            return false
+          }
+
           // Update the options
           if (left !== undefined) {
             this.options.pageMarginLeft = left
@@ -77,6 +89,14 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
 
           if (right !== undefined) {
             this.options.pageMarginRight = right
+          }
+
+          if (top !== undefined) {
+            this.options.pageHeaderHeight = top
+          }
+
+          if (bottom !== undefined) {
+            this.options.pageFooterHeight = bottom
           }
 
           // Update the CSS styles with new margin values
@@ -98,6 +118,12 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
         .rm-with-pagination .rm-page-footer {
           margin-right: -${_pageMarginRight / 2}px;
           margin-left: ${_pageMarginRight / 2}px;
+          height: ${_pageFooterHeight}px;
+        }
+        .rm-with-pagination .rm-page-header {
+          height: ${_pageHeaderHeight}px;
+          margin-right: -${_pageMarginRight / 2}px;
+          margin-left: ${_pageMarginRight / 2}px;
         }
         .rm-with-pagination .rm-page-footer::before {
           counter-increment: page-number;
@@ -105,7 +131,7 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
         .rm-with-pagination .rm-page-footer::before {
           content: counter(page-number); 
           position: absolute;
-          right: calc(-${_pageMarginRight/2}px + ${_pageMarginRight}px);
+          right: calc(-${_pageMarginRight / 2}px + ${_pageMarginRight}px);
           top: 5px;
         }
         .rm-with-pagination .rm-page-footer::after {
@@ -161,6 +187,8 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
           console.log("Page margins updated successfully:", {
             pageMarginLeft: this.options.pageMarginLeft,
             pageMarginRight: this.options.pageMarginRight,
+            pageHeaderHeight: this.options.pageHeaderHeight,
+            pageFooterHeight: this.options.pageFooterHeight,
           })
 
           return true
@@ -199,6 +227,12 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
       counter-reset: page-number;
     }
     .rm-with-pagination .rm-page-footer {
+      margin-right: -${_pageMarginRight / 2}px;
+      margin-left: ${_pageMarginRight / 2}px;
+      height: ${_pageFooterHeight}px;
+    }
+    .rm-with-pagination .rm-page-header {
+      height: ${_pageHeaderHeight}px;
       margin-right: -${_pageMarginRight / 2}px;
       margin-left: ${_pageMarginRight / 2}px;
     }

@@ -13,6 +13,8 @@ interface PaginationPlusOptions {
 interface MarginUpdate {
     left?: number;
     right?: number;
+    top?: number;
+    bottom?: number;
 }
 declare module "@tiptap/core" {
     interface Commands<ReturnType> {
