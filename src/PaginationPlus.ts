@@ -479,8 +479,6 @@ function createDecoration(state: EditorState, pageOptions: PaginationPlusOptions
         const pageHeader = document.createElement("div")
         pageHeader.classList.add("rm-page-header")
         pageHeader.style.height = _pageHeaderHeight + "px"
-        pageHeader.style.marginRight = `-${_pageMarginRight / 2}px`
-        pageHeader.style.marginLeft = `${_pageMarginRight / 2}px`
 
         pageBreak.append(pageFooter, pageSpace, pageHeader)
         pageContainer.append(page, pageBreak)
