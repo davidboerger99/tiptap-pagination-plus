@@ -88,13 +88,13 @@ export const PaginationPlus = Extension.create({
         .rm-with-pagination .rm-page-footer::before {
           content: counter(page-number); 
           position: absolute;
-          right: calc(-${_pageMarginRight / 2}px + ${_pageMarginRight}px);
+          right: calc(${_pageMarginRight}px);
           top: 5px;
         }
         .rm-with-pagination .rm-page-footer::after {
           content: attr(data-footer-text); 
           position: absolute;
-          left: calc(${_pageMarginLeft}px + ${_pageMarginRight / 2}px);
+          left: calc(${_pageMarginLeft}px);
           top: 5px;
         }
         .rm-with-pagination .rm-page-break.last-page ~ .rm-page-break {
@@ -348,7 +348,6 @@ function createDecoration(state, pageOptions) {
             page.style.position = "relative";
             page.style.float = "left";
             page.style.clear = "both";
-            // page.style.paddingLeft = `${pageOptions.pageMarginLeft}px`
             page.style.marginTop = firstPage ? `calc(${_pageHeaderHeight}px + ${_pageHeight}px)` : _pageHeight + "px";
             const pageBreak = document.createElement("div");
             pageBreak.classList.add("breaker");
@@ -383,7 +382,6 @@ function createDecoration(state, pageOptions) {
             pageSpace.style.height = _pageGap + "px";
             pageSpace.style.borderLeft = "1px solid";
             pageSpace.style.borderRight = "1px solid";
-            pageSpace.style.marginLeft = `${_pageMarginRight / 2}px`;
             pageSpace.style.position = "relative";
             pageSpace.style.setProperty("width", "calc(100% + 2px)", "important");
             pageSpace.style.left = "-1px";
