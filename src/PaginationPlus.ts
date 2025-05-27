@@ -229,14 +229,10 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
       counter-reset: page-number;
     }
     .rm-with-pagination .rm-page-footer {
-      margin-right: -${_pageMarginRight / 2}px;
-      margin-left: ${_pageMarginRight / 2}px;
       height: ${_pageFooterHeight}px;
     }
     .rm-with-pagination .rm-page-header {
       height: ${_pageHeaderHeight}px;
-      margin-right: -${_pageMarginRight / 2}px;
-      margin-left: ${_pageMarginRight / 2}px;
     }
     .rm-with-pagination .rm-page-footer::before {
       counter-increment: page-number;
@@ -244,13 +240,13 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
     .rm-with-pagination .rm-page-footer::before {
       content: counter(page-number); 
       position: absolute;
-      right: calc(${_pageMarginLeft}px - ${_pageMarginRight / 2}px);
+      right: calc(${_pageMarginRight}px);
       top: 5px;
     }
     .rm-with-pagination .rm-page-footer::after {
       content: attr(data-footer-text); 
       position: absolute;
-      left: calc(${_pageMarginLeft}px + ${_pageMarginRight / 2}px);
+      left: calc(${_pageMarginLeft}px);
       top: 5px;
     }
     .rm-with-pagination .rm-page-break.last-page ~ .rm-page-break {
