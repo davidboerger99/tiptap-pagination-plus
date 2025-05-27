@@ -67,6 +67,7 @@ export const PaginationPlus = Extension.create({
                     styleElement.textContent = `
         .ProseMirror {
           padding-right: ${_pageMarginRight}px;
+          padding-left: ${_pageMarginLeft}px;
         }
         .rm-with-pagination {
           counter-reset: page-number;
@@ -170,6 +171,7 @@ export const PaginationPlus = Extension.create({
         style.textContent = `
     .ProseMirror {
       padding-right: ${_pageMarginRight}px;
+      padding-left: ${_pageMarginLeft}px;
     }
     .rm-with-pagination {
       counter-reset: page-number;
@@ -346,7 +348,7 @@ function createDecoration(state, pageOptions) {
             page.style.position = "relative";
             page.style.float = "left";
             page.style.clear = "both";
-            page.style.paddingLeft = `${pageOptions.pageMarginLeft}px`;
+            // page.style.paddingLeft = `${pageOptions.pageMarginLeft}px`
             page.style.marginTop = firstPage ? `calc(${_pageHeaderHeight}px + ${_pageHeight}px)` : _pageHeight + "px";
             const pageBreak = document.createElement("div");
             pageBreak.classList.add("breaker");
