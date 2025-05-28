@@ -289,7 +289,7 @@ function createDecoration(state: EditorState, pageOptions: PaginationPlusOptions
   const pageWidget = Decoration.widget(
     0,
     (view) => {
-      const _extraPages = 0;
+      const _extraPages = 5;
       const _pageGap = pageOptions.pageGap
       const _pageHeaderHeight = pageOptions.pageHeaderHeight
       const _pageFooterHeight = pageOptions.pageFooterHeight
