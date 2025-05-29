@@ -100,6 +100,10 @@ function updateStyles(extension: any) {
       overflow-y: auto;
       width: 100%;
     }
+
+    .rm-with-pagination .rm-page-break.last-page ~ .rm-page-break {
+          display: none;
+    }
     
     /* Responsive adjustments */
     @media (max-width: 768px) {
@@ -161,7 +165,9 @@ function setupObservers(extension: any) {
 }
 
 function refreshPage(extension: any, targetNode: HTMLElement) {
-  const target = Array.from(targetNode.children).find((child) => child.id === "pages")
+  const target = Array.from(targetNode.children).find(
+    (child): child is HTMLElement => child.id === "pages"
+  )
   if (!target) return
 
   const pageElements = [...target.querySelectorAll(".page")] as HTMLElement[]
@@ -191,7 +197,9 @@ function refreshPage(extension: any, targetNode: HTMLElement) {
   }px`
 
   if (maxPage + 1 < target.children.length) {
-    target.children[maxPage + 1].classList.add("last-page")
+    const lastPage = target.children[maxPage + 1] as HTMLElement
+    lastPage.classList.add("last-page")
+    // lastPage.style.display = "none"
   }
 
   // Update breaker widths for all page breaks with margins

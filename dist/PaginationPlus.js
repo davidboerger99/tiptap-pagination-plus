@@ -68,6 +68,10 @@ function updateStyles(extension) {
       overflow-y: auto;
       width: 100%;
     }
+
+    .rm-with-pagination .rm-page-break.last-page ~ .rm-page-break {
+          display: none;
+    }
     
     /* Responsive adjustments */
     @media (max-width: 768px) {
@@ -95,6 +99,18 @@ function setupObservers(extension) {
             const _target = mutationList[0].target;
             if (_target.classList.contains("rm-with-pagination")) {
                 refreshPage(extension, _target);
+                // Zweites Refresh, wenn Browser Zeit hat und Layout fertig ist
+                if ('requestIdleCallback' in window) {
+                    requestIdleCallback(() => {
+                        requestAnimationFrame(() => {
+                            refreshPage(extension, _target);
+                        });
+                    });
+                }
+                else {
+                    // Fallback für ältere Browser
+                    setTimeout(() => refreshPage(extension, _target), 100);
+                }
             }
         }
     };
@@ -143,7 +159,9 @@ function refreshPage(extension, targetNode) {
     targetNode.style.minHeight = `${_maxPage * extension.options.pageHeight +
         (_maxPage - 1) * (extension.options.pageGap + 2 * extension.options.pageGapBorderSize)}px`;
     if (maxPage + 1 < target.children.length) {
-        target.children[maxPage + 1].classList.add("last-page");
+        const lastPage = target.children[maxPage + 1];
+        lastPage.classList.add("last-page");
+        // lastPage.style.display = "none"
     }
     // Update breaker widths for all page breaks with margins
     const breakers = target.querySelectorAll(".breaker");
@@ -219,7 +237,7 @@ function createPageBreak({ firstPage, pageIndex, pageOptions, }) {
 }
 function createDecoration(state, pageOptions) {
     const pageWidget = Decoration.widget(0, (view) => {
-        const _extraPages = 0;
+        const _extraPages = 5;
         const _pageGap = pageOptions.pageGap;
         const _pageHeaderHeight = pageOptions.pageHeaderHeight;
         const _pageFooterHeight = pageOptions.pageFooterHeight;
@@ -341,6 +359,18 @@ export const PaginationPlus = Extension.create({
         updateStyles(this);
         setupObservers(this);
         refreshPage(this, targetNode);
+        // Zweites Refresh, wenn Browser Zeit hat und Layout fertig ist
+        if ('requestIdleCallback' in window) {
+            requestIdleCallback(() => {
+                requestAnimationFrame(() => {
+                    refreshPage(this, targetNode);
+                });
+            });
+        }
+        else {
+            // Fallback für ältere Browser
+            setTimeout(() => refreshPage(this, targetNode), 100);
+        }
     },
     onDestroy() {
         var _a;
