@@ -33,6 +33,59 @@ declare module "@tiptap/core" {
   }
 }
 
+// Standalone refreshPage function with breakerWidth functionality
+function refreshPage(targetNode: HTMLElement, options: PaginationPlusOptions) {
+  const target = Array.from(targetNode.children).find((child) => child.id === "pages")
+  if (!target) return
+
+  const pageElements = [...target.querySelectorAll(".page")] as HTMLElement[]
+  const contentElements = [...targetNode.children] as HTMLElement[]
+
+  const pageTops = pageElements.map((el) => el.offsetTop).filter((top) => top !== 0)
+
+  pageTops.push(Number.POSITIVE_INFINITY) // to simplify range check for last page
+
+  const pagesWithContent = new Set()
+
+  for (let i = 2; i < contentElements.length - 1; i++) {
+    const top = contentElements[i].offsetTop
+    for (let i = 0; i < pageTops.length - 1; i++) {
+      if (top >= pageTops[i] && top < pageTops[i + 1]) {
+        pagesWithContent.add(i + 1) // page index starting from 1
+        break
+      }
+    }
+  }
+  const maxPage = pagesWithContent.size > 0 ? Math.max(...Array.from(pagesWithContent as Set<number>)) : 0
+
+  const _maxPage = maxPage + 2
+  const _pageGap = options.pageGap
+  const _pageGapBorderSize = options.pageGapBorderSize
+
+  // Add breakerWidth functionality
+  const breakerWidth = targetNode.clientWidth
+
+  targetNode.style.minHeight = `${
+    _maxPage * options.pageHeight + (_maxPage - 1) * (_pageGap + 2 * _pageGapBorderSize)
+  }px`
+
+  if (maxPage + 1 in target.children) {
+    target.children[maxPage + 1].classList.add("last-page")
+  }
+
+  // Apply breakerWidth styling to existing breaker elements
+  const breakerElements = target.querySelectorAll(".breaker") as NodeListOf<HTMLElement>
+  console.log("Breaker elements found:", breakerElements, breakerWidth, targetNode)
+  breakerElements.forEach((breaker) => {
+    breaker.style.width = `calc(${breakerWidth}px)`;
+    breaker.style.marginLeft = `-${options.pageMarginLeft}px`;
+    breaker.style.marginRight = `-${options.pageMarginRight}px`;
+    // 50% und 50% wenn 2.5cm und 2.5cm auf jeder seite 
+    // breaker.style.marginLeft = `calc(calc(calc(${breakerWidth}px - 100%) / 2) - calc(${breakerWidth}px - 100%))`
+    // breaker.style.marginRight = `calc(calc(calc(${breakerWidth}px - 100%) / 2) - calc(${breakerWidth}px - 100%))`
+  })
+}
+
 export const PaginationPlus = Extension.create<PaginationPlusOptions>({
   name: "PaginationPlus",
   addOptions() {
@@ -190,7 +243,9 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
             pageMarginRight: this.options.pageMarginRight,
             pageHeaderHeight: this.options.pageHeaderHeight,
             pageFooterHeight: this.options.pageFooterHeight,
-          })
+          });
+
+          refreshPage(editor.view.dom, this.options)
 
           return true
         },
@@ -291,53 +346,21 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
 
     document.head.appendChild(style)
 
-    const _pageGap = this.options.pageGap
-    const _pageGapBorderSize = this.options.pageGapBorderSize
-
-    const refreshPage = (targetNode: HTMLElement) => {
-      const target = Array.from(targetNode.children).find((child) => child.id === "pages")
-      if (!target) return
-
-      const pageElements = [...target.querySelectorAll(".page")] as HTMLElement[]
-      const contentElements = [...targetNode.children] as HTMLElement[]
-
-      const pageTops = pageElements.map((el) => el.offsetTop).filter((top) => top !== 0)
-
-      pageTops.push(Number.POSITIVE_INFINITY) // to simplify range check for last page
-
-      const pagesWithContent = new Set()
-
-      for (let i = 2; i < contentElements.length - 1; i++) {
-        const top = contentElements[i].offsetTop
-        for (let i = 0; i < pageTops.length - 1; i++) {
-          if (top >= pageTops[i] && top < pageTops[i + 1]) {
-            pagesWithContent.add(i + 1) // page index starting from 1
-            break
-          }
-        }
-      }
-      const maxPage = pagesWithContent.size > 0 ? Math.max(...Array.from(pagesWithContent as Set<number>)) : 0
-
-      const _maxPage = maxPage + 2
-      targetNode.style.minHeight = `${
-        _maxPage * this.options.pageHeight + (_maxPage - 1) * (_pageGap + 2 * _pageGapBorderSize)
-      }px`
-      if (maxPage + 1 in target.children) {
-        target.children[maxPage + 1].classList.add("last-page")
-      }
-    }
-
+    // Now using the standalone refreshPage function
     const callback = (mutationList: MutationRecord[], observer: MutationObserver) => {
       if (mutationList.length > 0 && mutationList[0].target) {
         const _target = mutationList[0].target as HTMLElement
         if (_target.classList.contains("rm-with-pagination")) {
-          refreshPage(_target)
+          refreshPage(_target, this.options)
         }
       }
     }
+
     const observer = new MutationObserver(callback)
     observer.observe(targetNode, config)
-    refreshPage(targetNode)
+
+    // Initial call to refreshPage
+    refreshPage(targetNode, this.options)
     this.editor.view.dispatch(this.editor.view.state.tr.setMeta(pagination_meta_key, true))
   },
 
@@ -392,6 +415,7 @@ function createDecoration(state: EditorState, pageOptions: PaginationPlusOptions
       const _pageBreakBackground = pageOptions.pageBreakBackground
       const _pageGapBorderSize = pageOptions.pageGapBorderSize
       const _pageMarginRight = pageOptions.pageMarginRight
+      const _pageMarginLeft = pageOptions.pageMarginLeft
 
       const childElements = view.dom.children
       let totalHeight = 0
@@ -437,8 +461,11 @@ function createDecoration(state: EditorState, pageOptions: PaginationPlusOptions
         const pageBreak = document.createElement("div")
         pageBreak.classList.add("breaker")
         pageBreak.style.width = `calc(${breakerWidth}px)`
-        pageBreak.style.marginLeft = `calc(calc(calc(${breakerWidth}px - 100%) / 2) - calc(${breakerWidth}px - 100%))`
-        pageBreak.style.marginRight = `calc(calc(calc(${breakerWidth}px - 100%) / 2) - calc(${breakerWidth}px - 100%))`
+        console.log("Hello", _pageMarginRight, )
+        pageBreak.style.marginLeft = `-${_pageMarginLeft}px`;
+        pageBreak.style.marginRight = `-${_pageMarginRight}px`;
+        // pageBreak.style.marginLeft = `calc(calc(calc(${breakerWidth}px - 100%) / 2) - calc(${breakerWidth}px - 100%))`
+        // pageBreak.style.marginRight = `calc(calc(calc(${breakerWidth}px - 100%) / 2) - calc(${breakerWidth}px - 100%))`
         pageBreak.style.position = "relative"
         pageBreak.style.float = "left"
         pageBreak.style.clear = "both"
