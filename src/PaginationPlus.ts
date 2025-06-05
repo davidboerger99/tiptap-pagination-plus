@@ -249,6 +249,14 @@ export const PaginationPlus = Extension.create<PaginationPlusOptions>({
 
           return true
         },
+      getPageBodyHeight:
+        () => ({ editor }: { editor: Editor }) => {
+          return this.options.pageHeight - (this.options.pageHeaderHeight + this.options.pageFooterHeight)
+        },
+      getPageBodyWidth:
+        () => ({ editor }: { editor: Editor }) => {
+          return editor.view.dom.clientWidth - (this.options.pageMarginLeft + this.options.pageMarginRight)
+        }
     }
   },
 
@@ -461,7 +469,6 @@ function createDecoration(state: EditorState, pageOptions: PaginationPlusOptions
         const pageBreak = document.createElement("div")
         pageBreak.classList.add("breaker")
         pageBreak.style.width = `calc(${breakerWidth}px)`
-        console.log("Hello", _pageMarginRight, )
         pageBreak.style.marginLeft = `-${_pageMarginLeft}px`;
         pageBreak.style.marginRight = `-${_pageMarginRight}px`;
         // pageBreak.style.marginLeft = `calc(calc(calc(${breakerWidth}px - 100%) / 2) - calc(${breakerWidth}px - 100%))`

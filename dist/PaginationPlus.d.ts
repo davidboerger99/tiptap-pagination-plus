@@ -20,7 +20,6 @@ declare module "@tiptap/core" {
     interface Commands<ReturnType> {
         paginationPlus: {
             updatePageMargins: (margins: MarginUpdate) => ReturnType;
-            refreshPagination: () => ReturnType;
         };
     }
 }
