@@ -34,7 +34,6 @@ function refreshPage(targetNode, options) {
     }
     // Apply breakerWidth styling to existing breaker elements
     const breakerElements = target.querySelectorAll(".breaker");
-    console.log("Breaker elements found:", breakerElements, breakerWidth, targetNode);
     breakerElements.forEach((breaker) => {
         breaker.style.width = `calc(${breakerWidth}px)`;
         breaker.style.marginLeft = `-${options.pageMarginLeft}px`;
@@ -180,12 +179,6 @@ export const PaginationPlus = Extension.create({
                 }
                 // Trigger a re-render of the pagination decorations
                 editor.view.dispatch(editor.view.state.tr.setMeta(pagination_meta_key, true));
-                console.log("Page margins updated successfully:", {
-                    pageMarginLeft: this.options.pageMarginLeft,
-                    pageMarginRight: this.options.pageMarginRight,
-                    pageHeaderHeight: this.options.pageHeaderHeight,
-                    pageFooterHeight: this.options.pageFooterHeight,
-                });
                 refreshPage(editor.view.dom, this.options);
                 return true;
             },
